@@ -20,13 +20,31 @@ import { errorHandler, notFoundHandler } from './middleware/error.middleware.js'
 // ---- Create the Express App ----
 const app = express();
 
+const allowedOrigins = (process.env.CLIENT_URL || 'http://localhost:5173')
+  .split(',')
+  .map((origin) => origin.trim())
+  .filter(Boolean);
+
 // ============================================
 // MIDDLEWARE (runs on every request, in order)
 // ============================================
 
 // 1. CORS: Allow our frontend (React) to talk to this backend
 //    Without this, browsers will block requests from localhost:5173 → localhost:5000
-app.use(cors({ origin: process.env.CLIENT_URL || 'http://localhost:5173' }));
+app.use(cors({
+  origin(origin, callback) {
+    // Allow server-to-server requests and local tools that omit Origin.
+    if (!origin) {
+      return callback(null, true);
+    }
+
+    if (allowedOrigins.includes(origin)) {
+      return callback(null, true);
+    }
+
+    return callback(new Error('Not allowed by CORS'));
+  },
+}));
 
 // 2. Body Parser: Convert incoming JSON requests to JavaScript objects
 //    10mb limit to handle large resume text and interview data

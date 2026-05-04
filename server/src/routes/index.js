@@ -6,6 +6,10 @@ import historyRoutes from './history.routes.js';
 
 const router = Router();
 
+router.get('/health', (_req, res) => {
+  res.status(200).json({ status: 'ok' });
+});
+
 router.use('/auth', authRoutes);
 router.use('/resume', resumeRoutes);
 router.use('/interview', interviewRoutes);
